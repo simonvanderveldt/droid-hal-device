@@ -33,10 +33,14 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+hadk
+
 if [ -z $DEVICE ]; then
     echo 'Error: $DEVICE is undefined. Please run hadk'
     exit 1
 fi
+
+cd $ANDROID_ROOT
 
 if [[ ! -d rpm/helpers && ! -d rpm/dhd ]]; then
     echo $0: launch this script from the $ANDROID_ROOT directory
@@ -50,10 +54,11 @@ fi
 
 echo "Creating Kickstart file"
 HA_REPO="repo --name=adaptation0-$DEVICE-@RELEASE@"
+KS="Jolla-@RELEASE@-$DEVICE-@ARCH@.ks"
 sed -e \
 "s|^$HA_REPO.*$|$HA_REPO --baseurl=file://$ANDROID_ROOT/droid-local-repo/$DEVICE|" \
-$ANDROID_ROOT/hybris/droid-configs/installroot/usr/share/kickstarts/Jolla-@RELEASE@-$DEVICE-@ARCH@.ks \
-> tmp/Jolla-@RELEASE@-$DEVICE-@ARCH@.ks
+$ANDROID_ROOT/hybris/droid-configs/installroot/usr/share/kickstarts/$KS \
+> tmp/$KS
 
 echo "Updating patterns"
 hybris/droid-configs/droid-configs-device/helpers/process_patterns.sh || true
@@ -61,11 +66,12 @@ hybris/droid-configs/droid-configs-device/helpers/process_patterns.sh || true
 echo "Creating rootfs"
 # Set the version of your choosing, latest is strongly preferred
 # (check with "Sailfish OS versions" link above)
-RELEASE=1.1.7.28
+RELEASE=1.1.9.28
 # EXTRA_NAME adds your custom tag. It doesn’t support ’.’ dots in it!
 EXTRA_NAME=-my1
-sudo mic create fs --arch armv7hl \
---tokenmap=ARCH:armv7hl,RELEASE:$RELEASE,EXTRA_NAME:$EXTRA_NAME \
+sudo mic create fs --arch $PORT_ARCH \
+--debug \
+--tokenmap=ARCH:$PORT_ARCH,RELEASE:$RELEASE,EXTRA_NAME:$EXTRA_NAME \
 --record-pkgs=name,url \
 --outdir=sfe-$DEVICE-$RELEASE$EXTRA_NAME \
 --pack-to=sfe-$DEVICE-$RELEASE$EXTRA_NAME.tar.bz2 \
