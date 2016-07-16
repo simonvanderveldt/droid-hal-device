@@ -37,28 +37,34 @@ if [ -z $DEVICE ]; then
     echo 'Error: $DEVICE is undefined. Please run hadk'
     exit 1
 fi
+
 if [[ ! -d rpm/helpers && ! -d rpm/dhd ]]; then
     echo $0: launch this script from the $ANDROID_ROOT directory
     exit 1
 fi
 
-# utilities
-. $ANDROID_ROOT/rpm/dhd/helpers/util.sh
-
-
 if [ ! -d rpm/dhd ]; then
     echo "rpm/dhd/ does not exist, please run migrate first."
     exit 1
 fi
+
+# Source util functions
+. $ANDROID_ROOT/rpm/dhd/helpers/util.sh
+
+# Set local repo location
 LOCAL_REPO=$ANDROID_ROOT/droid-local-repo/$DEVICE
 mkdir -p $LOCAL_REPO
-rm -rf $LOCAL_REPO/droid-hal-*
-rm -rf $LOCAL_REPO/droid-config-*
-builddhd
-buildconfigs
-echo "-------------------------------------------------------------------------------"
 
-read -p 'About to build HA middleware packages. Press Enter to continue.'
+# Start building
+echo "Building droid-hal-$DEVICE"
+rm -rf $LOCAL_REPO/droid-hal-*
+builddhd
+
+echo "Building droid-config-$DEVICE"
+rm -rf $LOCAL_REPO/droid-config-*
+buildconfigs
+
+echo 'Building HA Middleware Packages'
 sb2 -t $VENDOR-$DEVICE-$ARCH -R -msdk-install ssu domain sales
 sb2 -t $VENDOR-$DEVICE-$ARCH -R -msdk-install ssu dr sdk
 
@@ -82,5 +88,6 @@ buildmw geoclue-providers-hybris || die
 read -p '"Build HA Middleware Packages built". Press Enter to continue.'
 popd
 
+echo 'Building droid-hal-version-$DEVICE'
 buildversion
 echo "----------------------DONE! Now proceed on creating the rootfs------------------"
