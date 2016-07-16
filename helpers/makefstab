@@ -87,8 +87,8 @@ for my $file (@files) {
     $unitname =~ s/^-//;
     $unitname =~ s/-$//;
     if (-f "$unitname.mount" ) {
-      print "Error, $unitname.mount already exists\n";
-      exit 1;
+      print "Error, $unitname.mount from $file already exists\n";
+      #exit 1;
     }
     open(UNIT, ">$outputdir/$unitname.mount") or die "Couldn't write to $outputdir/$unitname.mount\n";
 
